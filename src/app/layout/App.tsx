@@ -5,6 +5,7 @@ import ActivityDashboard from '../../features/activities/dashboard/ActivityDashb
 import { Activity } from '../models/activity';
 import Navbar from './Navbar';
 import { v4 as uuid } from 'uuid';
+import LoadingComponent from './LoadingComponent';
 
 function App() {
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -12,10 +13,15 @@ function App() {
     Activity | undefined
   >(undefined);
   const [editMode, setEditMode] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const token =
-      'eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6ImJvYiIsIm5hbWVpZCI6IjYyYzU3YjkzLTMzYTgtNDZjNy1iMDRlLWYzOTc4MjhiYzBlNSIsImVtYWlsIjoiYm9iQHRlc3QuY29tIiwibmJmIjoxNjE1NDA4MzU3LCJleHAiOjE2MTU0MDg5NTcsImlhdCI6MTYxNTQwODM1N30.bbc6vNO0V5ytMfhHoJYiReRBHuoxXH495IimyB-W8_EvvmEI7o-RDoPIbwCVXH9L-6wscqrkeVuld4T761PkLw';
+      'eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJ1bmlxdWVfbmFtZSI6ImJvYiIsIm5hbWVpZCI6IjYyYzU3YjkzLTMzYTgtNDZjNy1iMDRlLWYzOTc4MjhiYzBlNSIsImVtYWlsIjoiYm9iQHRlc3QuY29tIiwibmJmIjoxNjE1NDExMDU3LCJleHAiOjE2MTU0MTE2NTcsImlhdCI6MTYxNTQxMTA1N30.QcdfuxD4Io7F4leFuOHbOXO8xbSyX2XimRN3GbI1Km6THuyqntaDwjC4EOrKxtNdqkKRJDxAnU1na4rhkzGDjg';
+
+    // agent.Activities.list().then((response) => {
+    //   setActivities(response);
+    // });
     axios
       .get<Activity[]>('https://reactivities.herokuapp.com/api/activities', {
         headers: {
@@ -23,7 +29,13 @@ function App() {
         },
       })
       .then((response) => {
-        setActivities(response.data);
+        let activities: Activity[] = [];
+        response.data.forEach((activity) => {
+          activity.date = activity.date.split('T')[0];
+          activities.push(activity);
+        });
+        setActivities(activities);
+        setLoading(false);
       });
   }, []);
 
@@ -58,6 +70,8 @@ function App() {
   const handleDeleteActivity = (id: string) => {
     setActivities([...activities.filter((item) => item.id !== id)]);
   };
+
+  if (loading) return <LoadingComponent content='loading app' />;
 
   return (
     <Fragment>
